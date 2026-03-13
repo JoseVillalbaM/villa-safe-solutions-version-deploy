@@ -1,4 +1,4 @@
-// File: /workspaces/villa-safe-next.js-firebase-demo/app/page.tsx
+// File: /Users/villasafesolutions/villa-safe-next.js-firebase-demo/app/page.tsx
 import * as entry from '../../../app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

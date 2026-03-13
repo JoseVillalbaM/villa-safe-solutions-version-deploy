@@ -22,6 +22,7 @@ type TranslationKey =
   | "home.hero.subtitle"
   | "home.hero.quoteButton"
   | "home.hero.contactButton"
+  | "home.hero.digitalCardButton"
   | "home.services.title"
   | "home.services.subtitle"
   | "home.contact.title"
@@ -109,6 +110,7 @@ const translations: Record<'es' | 'en', Record<TranslationKey, string>> = {
     "home.hero.subtitle": "Soluciones profesionales para tu hogar y negocio",
     "home.hero.quoteButton": "Solicitar Cotización",
     "home.hero.contactButton": "Contacto",
+    "home.hero.digitalCardButton": "ver Tarjeta Digital",
     "home.services.title": "Servicios",
     "home.services.subtitle": "Soluciones profesionales para todas tus necesidades",
     "home.contact.title": "Contáctanos",
@@ -195,6 +197,7 @@ const translations: Record<'es' | 'en', Record<TranslationKey, string>> = {
     "home.hero.subtitle": "Professional solutions for your home and business",
     "home.hero.quoteButton": "Request Quote",
     "home.hero.contactButton": "Contact",
+    "home.hero.digitalCardButton":" View Digital Card",
     "home.services.title": "Services",
     "home.services.subtitle": "Professional solutions for all your needs",
     "home.contact.title": "Contact Us",
@@ -276,7 +279,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 // --- Provider ---
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguage] = useState<'es' | 'en'>('es');
+  const [language, setLanguage] = useState<'en' | 'es'>('en');
 
   const t = (key: TranslationKey): string => {
     return translations[language][key] || key;

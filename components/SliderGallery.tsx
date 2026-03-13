@@ -1,235 +1,266 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import styled, { keyframes } from 'styled-components';
-import {sliderServicesImages} from '../lib/imgSliderServices'
-// 1. Importamos tu botón existente
-import { ButtonStyled } from './ui/ButtonStyled'; // Asumiendo que está en la misma carpeta
+import React from 'react';
+import styled, { keyframes, useTheme } from 'styled-components';
+import { Brush, Sparkles, Tv, Wrench } from 'lucide-react';
 
-// --- Imágenes (misma data) ---
-const images = [
+// 1. CORRECCIÓN CLAVE: Importamos desde 'contexts' (plural) y usamos el hook 'useLanguage'
+import { useLanguage } from '../contexts/LanguageContext';
+
+// --- DATOS SEGUROS ---
+const safeServicesData = [
   {
-    url: '/assets/ai-images/painting.jpg',
-    title: 'Painting Services',
-    description: 'Professional painting for homes and businesses',
+    id: 'painting',
+    icon: Brush,
+    image: '/assets/ai-images/img-sliderPaint.jpeg',
+    colorKey: 'skyBlue',
+    translations: {
+      es: { title: 'Pintura Profesional', description: 'Interiores y exteriores con acabados premium y detallados.' },
+      en: { title: 'Professional Painting', description: 'Interior and exterior painting with premium detailed finishes.' },
+    },
   },
   {
-    url: '/assets/ai-images/cleaning.jpg',
-    title: 'Cleaning Services',
-    description: 'Deep cleaning and maintenance',
+    id: 'cleaning',
+    icon: Sparkles,
+    image: '/assets/ai-images/img-sliderCleaning.jpeg',
+    colorKey: 'emeraldGreen',
+    translations: {
+      es: { title: 'Limpieza Profunda', description: 'Servicio especializado para comercios y residencias.' },
+      en: { title: 'Deep Cleaning', description: 'Specialized service for commercial and residential spaces.' },
+    },
   },
   {
-    url: '/assets/ai-images/remodel.jpg',
-    title: 'Remodeling',
-    description: 'Complete renovation solutions',
+    id: 'tv-install',
+    icon: Tv,
+    image: '/assets/ai-images/img-sliderTvwall.jpeg',
+    colorKey: 'warmOrange',
+    translations: {
+      es: { title: 'Instalación TV', description: 'Paneles modernos tipo mármol y madera para tu entretenimiento.' },
+      en: { title: 'TV Setup', description: 'Modern marble and wood style panels for your entertainment.' },
+    },
   },
   {
-    url: '/assets/ai-images/standtv.jpg',
-    title: 'TV Installation',
-    description: 'Professional TV mounting and setup',
+    id: 'general',
+    icon: Wrench,
+    image: '/assets/ai-images/img-sliderGeneral.jpeg',
+    colorKey: 'coralRed',
+    translations: {
+      es: { title: 'Servicios Generales', description: 'Instalación de ventiladores, cortinas, closets y reparaciones.' },
+      en: { title: 'General Services', description: 'Installation of fans, curtains, closets, and general repairs.' },
+    },
   },
 ];
 
-// --- Animación (recreando animate-fade-in) ---
-const fadeIn = keyframes`
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+// --- ANIMACIONES ---
+const scroll = keyframes`
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 `;
 
-// --- Styled Components ---
+// --- ESTILOS ---
+const GallerySection = styled.section`
+  padding: 4rem 0;
+  background-color: ${({ theme }) => theme?.colors?.bg || '#111'};
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  width: 100%;
+`;
 
-// 2. Extendemos tu ButtonStyled con los estilos específicos del slider
-const SliderNavButton = styled(ButtonStyled)`
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0;
-  transition: opacity 0.3s ease, background-color 0.3s ease;
-
-  /* Asumiendo que tu ButtonStyled no tiene esto por defecto */
-  /* Si ya lo tiene, puedes borrar estas líneas */
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
-  border-radius: 50%;
-  padding: 0.5rem;
-  width: auto; /* Aseguramos que se ajuste al ícono */
-  height: auto;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.4);
-  }
-  /* --- Fin de estilos opcionales --- */
-
-  /* Posicionamiento */
-  &.left {
-    left: 1rem; /* left-4 */
-  }
-  &.right {
-    right: 1rem; /* right-4 */
+const SectionTitle = styled.h2`
+  color: ${({ theme }) => theme?.colors?.headerPrimary || '#fff'};
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-align: center;
+  z-index: 10;
+  
+  span {
+    color: ${({ theme }) => theme?.colors?.primary || '#3b82f6'};
   }
 `;
 
 const SliderContainer = styled.div`
-  position: relative;
   width: 100%;
-  height: 500px;
-  border-radius: 0.75rem; /* rounded-xl */
+  display: flex;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+`;
+
+const SliderTrack = styled.div`
+  display: flex;
+  gap: 2rem;
+  width: max-content;
+  animation: ${scroll} 50s linear infinite;
+  padding: 2rem 0;
+  
+  &:hover {
+    animation-play-state: paused;
+  }
+`;
+
+const ServiceCard = styled.div`
+  background-color: ${({ theme }) => theme?.colors?.secondaryBg || '#023859'};
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  width: 320px;
+  min-width: 320px;
+  height: 420px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+
+  &:hover {
+    transform: translateY(-10px);
+    border-color: var(--card-color, #3b82f6);
+    box-shadow: 0 20px 40px -10px var(--card-color, #3b82f6);
+  }
+`;
+
+const CardImageContainer = styled.div`
+  width: 100%;
+  height: 55%;
+  position: relative;
   overflow: hidden;
 
-  /* 3. El "group-hover" ahora apunta a nuestro SliderNavButton */
-  &:hover ${SliderNavButton} {
-    opacity: 1;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  ${ServiceCard}:hover & img {
+    transform: scale(1.1);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(to top, ${({ theme }) => theme?.colors?.secondaryBg || '#023859'}, transparent);
   }
 `;
 
-const ImageSlide = styled.div<{ $isActive: boolean }>`
-  position: absolute;
-  inset: 0;
-  transition: opacity 700ms ease;
-  opacity: ${(props) => (props.$isActive ? 1 : 0)};
-`;
-
-const ImageElement = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-const ImageGradient = styled.div`
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.7),
-    transparent
-  );
+const FloatingIcon = styled.div`
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: ${({ theme }) => theme?.colors?.secondaryBg || '#023859'};
+  border: 2px solid var(--card-color, #3b82f6);
   display: flex;
-  align-items: flex-end;
-`;
-
-const TextWrapper = styled.div`
-  padding: 2rem; /* p-8 */
-  color: white;
-  animation: ${fadeIn} 0.5s ease-out;
-`;
-
-const Title = styled.h3`
-  font-size: 1.875rem; /* text-3xl */
-  line-height: 2.25rem;
-  font-weight: 700; /* font-bold */
-  margin-bottom: 0.5rem; /* mb-2 */
-`;
-
-const Description = styled.p`
-  font-size: 1.125rem; /* text-lg */
-  line-height: 1.75rem;
-`;
-
-const StyledChevron = styled.svg`
-  height: 2rem; /* h-8 */
-  width: 2rem; /* w-8 */
-`;
-
-const DotsContainer = styled.div`
+  align-items: center;
+  justify-content: center;
+  color: var(--card-color, #3b82f6);
   position: absolute;
-  bottom: 1rem; /* bottom-4 */
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-
-  & > :not([hidden]) ~ :not([hidden]) {
-    margin-left: 0.5rem; /* space-x-2 */
+  top: 50%;
+  left: 1.5rem;
+  transform: translateY(-50%);
+  z-index: 5;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  
+  svg {
+    width: 30px;
+    height: 30px;
   }
 `;
 
-const Dot = styled.button<{ $isActive: boolean }>`
-  height: 0.5rem; /* h-2 */
-  border-radius: 9999px; /* rounded-full */
-  transition: all 0.3s ease;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  background-color: ${(props) =>
-    props.$isActive ? 'white' : 'rgba(255, 255, 255, 0.5)'};
-  width: ${(props) => (props.$isActive ? '2rem' : '0.5rem')}; /* w-8 vs w-2 */
+const CardContent = styled.div`
+  padding: 1.5rem;
+  padding-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  height: 45%;
+  justify-content: flex-start;
 `;
 
-// --- Componente ---
+const CardTitle = styled.h3`
+  color: ${({ theme }) => theme?.colors?.textPrimary || '#fff'};
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+`;
 
-const SliderGallery = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+const CardDescription = styled.p`
+  color: ${({ theme }) => theme?.colors?.textSecondary || '#d1d5db'};
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+  opacity: 0.9;
+`;
 
-  const images = sliderServicesImages;
-  // Lógica de estado y efectos (sin cambios)
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 5000);
+// --- COMPONENTE PRINCIPAL ---
 
-    return () => clearInterval(timer);
-  }, [images.length]);
-
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-  };
-
-  const goToPrevious = () => {
-    // AQUÍ ESTABA EL ERROR (la coma extra)
-    setCurrentIndex(
-      (prevIndex) => (prevIndex - 1 + images.length) % images.length,
-    );
-  };
-
-  const goToNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-  };
+const SliderGallery: React.FC = () => {
+  const theme = useTheme();
+  
+  // 2. CORRECCIÓN CLAVE: Usamos el hook useLanguage()
+  // Ya no usamos useContext(LanguageContext) porque ese no estaba exportado.
+  // Al usar useLanguage(), TypeScript ya sabe automáticamente que devuelve { language, setLanguage, t }
+  const { language } = useLanguage(); 
+  
+  const items = [...safeServicesData, ...safeServicesData, ...safeServicesData];
 
   return (
-    <SliderContainer>
-      {/* Images */}
-      {images.map((image, index) => (
-        <ImageSlide key={index} $isActive={index === currentIndex}>
-          <ImageElement src={image.url} alt={image.title} />
-          <ImageGradient>
-            <TextWrapper>
-              <Title>{image.title}</Title>
-              <Description>{image.description}</Description>
-            </TextWrapper>
-          </ImageGradient>
-        </ImageSlide>
-      ))}
+    <GallerySection>
+      <SectionTitle>
+        {language === 'es' ? 'Nuestros ' : 'Our '} 
+        <span>{language === 'es' ? 'Servicios' : 'Services'}</span>
+      </SectionTitle>
 
-      {/* 4. Usamos el nuevo SliderNavButton que extiende tu componente */}
-      <SliderNavButton className="left" onClick={goToPrevious}>
-        <StyledChevron as={ChevronLeft} />
-      </SliderNavButton>
-      <SliderNavButton className="right" onClick={goToNext}>
-        <StyledChevron as={ChevronRight} />
-        {/* AQUÍ ESTABA EL SEGUNDO ERROR (la etiqueta de cierre) */}
-      </SliderNavButton>
+      <SliderContainer>
+        <SliderTrack>
+          {items.map((service, index) => {
+            // "as any" es un truco temporal para evitar que TS se queje si el theme no es perfecto
+            const palette = (theme?.colors?.palette as any) || {};
+            const safeColor = palette[service.colorKey] || '#3b82f6';
+            
+            const cardStyle = {
+              '--card-color': safeColor
+            } as React.CSSProperties;
 
-      {/* Dots */}
-      <DotsContainer>
-        {images.map((_, index) => (
-          <Dot
-            key={index}
-            $isActive={index === currentIndex}
-            onClick={() => goToSlide(index)}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </DotsContainer>
-    </SliderContainer>
+            return (
+              <ServiceCard 
+                key={`${service.id}-${index}`} 
+                style={cardStyle}
+              >
+                <CardImageContainer>
+                    <img src={service.image} alt={service.translations[language].title} />
+                </CardImageContainer>
+
+                <FloatingIcon style={cardStyle}>
+                  <service.icon />
+                </FloatingIcon>
+                
+                <CardContent>
+                  <CardTitle>
+                    {service.translations[language].title}
+                  </CardTitle>
+                  <CardDescription>
+                    {service.translations[language].description}
+                  </CardDescription>
+                </CardContent>
+              </ServiceCard>
+            );
+          })}
+        </SliderTrack>
+      </SliderContainer>
+    </GallerySection>
   );
 };
 
 export default SliderGallery;
+
 
 

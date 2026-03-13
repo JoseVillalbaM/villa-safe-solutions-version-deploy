@@ -6,14 +6,12 @@ import styled from 'styled-components';
 import { ArrowRight, Star, MessageSquare, LogIn } from 'lucide-react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-
 // --- Importa los componentes ---
 import {ButtonStyled} from '@/components/ui/ButtonStyled';
-import SliderGallery from '@/components/SliderGallery';
 
 // --- Importa el hook de idioma ---
 import { useLanguage } from '@/contexts/LanguageContext';
-
+import SliderGallery from '@/components/SliderGallery';
 
 // --- Tipos para las reseñas ---
 interface Review {
@@ -49,6 +47,10 @@ const SectionContainer = styled.section`
 `;
 
 const HeroContainer = styled(SectionContainer)`
+  background-image: linear-gradient(rgba(0,0,0,0.35),rgba(0,0,0,0.65)), url('/assets/ai-images/logo-villa-safe.JPG');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   align-items: center;
   justify-content: center;
   text-align: center;
@@ -57,10 +59,10 @@ const HeroContainer = styled(SectionContainer)`
 `;
 
 const HeroTitle = styled.h1`
-  font-size: 3rem;
-  font-weight: 700;
-  margin: 0;
-  line-height: 1.1;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 20rem;
+  line-height: 1.0;
   
   background: linear-gradient(
     135deg, 
@@ -81,7 +83,8 @@ const HeroTitle = styled.h1`
 
 const HeroSubtitle = styled.p`
   font-size: 1.125rem;
-  color: ${({ theme }) => theme.colors.textSecondary};
+  //color: ${({ theme }) => theme.colors.textSecondary};
+  color:white;
   margin-top: 1.5rem;
   max-width: 600px;
   line-height: 1.6;
@@ -241,14 +244,17 @@ const BusinessCardImageContainer = styled.div`
     0 4px 20px rgba(59, 130, 246, 0.2),
     0 0 30px ${({ theme }) => theme.colors.palette.skyBlue}15;
   
-  img {
+  /* --- CAMBIO AQUÍ: Agregamos 'video' al selector para que herede estilos --- */
+  img, video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
+    display: block; /* Importante para quitar espacios en blanco extra */
   }
   
-  &:hover img {
+  /* --- CAMBIO AQUÍ: Efecto hover también para el video --- */
+  &:hover img, &:hover video {
     transform: scale(1.05);
   }
   
@@ -271,6 +277,7 @@ const BusinessCardImageContainer = styled.div`
     font-size: 0.9rem;
   }
 `;
+
 const OpenCardButton = styled.button`
   background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary} 0%, ${({ theme }) => theme.colors.palette.deepBlue} 100%);
   color: white;
@@ -651,10 +658,6 @@ export default function HomePage() {
   // Mostrar solo las últimas 3-4 reseñas
   const displayedReviews = reviews.slice(0, 4);
   
- 
-
-  
-
   return (
     <PageContainer>
       
@@ -699,156 +702,163 @@ export default function HomePage() {
       <SectionContainer>
         <SectionTitle>
           {t('home.contact.title')}
-</SectionTitle>
-<SectionSubtitle>
-{t('home.contact.subtitle')}
-</SectionSubtitle>
-<ContactGrid>
-      <ContactInfo>
-        <h3>
-          {t('home.contact.qualityTitle')}
-        </h3>
-        <p>
-          {t('home.contact.description')}
-        </p>
-        <p>
-          {t('home.contact.contactText')}
-        </p>
-        <Link href="/contact" style={{marginTop: '1.5rem', display: 'inline-block'}}>
-          <ButtonStyled $primary>
-            {t('home.contact.formButton')}
-          </ButtonStyled>
-        </Link>
-      </ContactInfo>
+        </SectionTitle>
+        <SectionSubtitle>
+          {t('home.contact.subtitle')}
+        </SectionSubtitle>
+        <ContactGrid>
+          <ContactInfo>
+            <h3>
+              {t('home.contact.qualityTitle')}
+            </h3>
+            <p>
+              {t('home.contact.description')}
+            </p>
+            <p>
+              {t('home.contact.contactText')}
+            </p>
+            <Link href="/contact" style={{marginTop: '1.5rem', display: 'inline-block'}}>
+              <ButtonStyled $primary>
+                {t('home.contact.formButton')}
+              </ButtonStyled>
+            </Link>
+          </ContactInfo>
 
-      <BusinessCardSection>
-        <BusinessCardTitle>
-          {t('home.contact.businessCardTitle')}
-        </BusinessCardTitle>
-        <BusinessCardImageContainer>
-          
-          <img 
-            src="/images/business-card.jpg" 
-            alt={t('home.contact.businessCardTitle')}
-          />
-        </BusinessCardImageContainer>
-        <Link href="/digital-card">
-          <OpenCardButton>
-            Tarjeta de negocios 
-          </OpenCardButton>
-        </Link>
-          
-        
-        
-      
-
-      </BusinessCardSection>
-    </ContactGrid>
-  </SectionContainer>
-
-  {/* --- 4. SECCIÓN DE RESEÑAS --- */}
-  <ReviewsSection>
-    <SectionTitle>
-      {t('home.reviews.title')}
-    </SectionTitle>
-    <SectionSubtitle>
-      {t('home.reviews.subtitle')}
-    </SectionSubtitle>
-
-    {displayedReviews.length > 0 ? (
-      <ReviewsGrid>
-        {displayedReviews.map((review) => (
-          <ReviewCard key={review.id}>
-            <ReviewHeader>
-              <UserAvatar>
-                {review.userName.charAt(0).toUpperCase()}
-              </UserAvatar>
-              <UserInfo>
-                <UserName>{review.userName}</UserName>
-                <ReviewDate>{review.date}</ReviewDate>
-              </UserInfo>
-            </ReviewHeader>
+          <BusinessCardSection>
+            <BusinessCardTitle>
+              {t('home.contact.businessCardTitle')}
+            </BusinessCardTitle>
             
-            <RatingContainer>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <StarIcon key={star} $filled={star <= review.rating} />
-              ))}
-            </RatingContainer>
+            <BusinessCardImageContainer>
+              {/* --- CAMBIO AQUÍ: Reemplazo de <img> por <video> --- */}
+              {/* Usamos la ruta /assets/videos/intro-card.mp4 como acordamos */}
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                width="100%"
+                height="100%"
+              >
+                <source src="/assets/videos/intro-card.mp4" type="video/mp4" />
+                Tu navegador no soporta el elemento de video.
+              </video>
+            </BusinessCardImageContainer>
             
-            <ReviewComment>{review.comment}</ReviewComment>
-          </ReviewCard>
-        ))}
-      </ReviewsGrid>
-    ) : (
-      <EmptyState>
-        <MessageSquare />
-        <p>{t('home.reviews.emptyState')}</p>
-      </EmptyState>
-    )}
+            <Link href="/digital-card">
+              <OpenCardButton>
+                {t('home.hero.digitalCardButton')}
+              </OpenCardButton>
+            </Link>
+          </BusinessCardSection>
+        </ContactGrid>
+      </SectionContainer>
 
-    {/* Formulario para agregar reseña - Solo si está autenticado */}
-    <ReviewFormContainer>
-      <FormTitle>{t('home.reviews.formTitle')}</FormTitle>
-      
-      {user ? (
-        <Form onSubmit={handleSubmitReview}>
-          <FormGroup>
-            <Label>{t('home.reviews.nameLabel')}</Label>
-            <Input
-              type="text"
-              value={user.displayName || user.email || ''}
-              disabled
-            />
-          </FormGroup>
+      {/* --- 4. SECCIÓN DE RESEÑAS --- */}
+      <ReviewsSection>
+        <SectionTitle>
+          {t('home.reviews.title')}
+        </SectionTitle>
+        <SectionSubtitle>
+          {t('home.reviews.subtitle')}
+        </SectionSubtitle>
 
-          <FormGroup>
-            <Label>{t('home.reviews.ratingLabel')}</Label>
-            <RatingSelector>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <StarIcon
-                  key={star}
-                  $filled={star <= newReview.rating}
-                  onClick={() => setNewReview({...newReview, rating: star})}
-                  style={{ cursor: 'pointer' }}
+        {displayedReviews.length > 0 ? (
+          <ReviewsGrid>
+            {displayedReviews.map((review) => (
+              <ReviewCard key={review.id}>
+                <ReviewHeader>
+                  <UserAvatar>
+                    {review.userName.charAt(0).toUpperCase()}
+                  </UserAvatar>
+                  <UserInfo>
+                    <UserName>{review.userName}</UserName>
+                    <ReviewDate>{review.date}</ReviewDate>
+                  </UserInfo>
+                </ReviewHeader>
+                
+                <RatingContainer>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <StarIcon key={star} $filled={star <= review.rating} />
+                  ))}
+                </RatingContainer>
+                
+                <ReviewComment>{review.comment}</ReviewComment>
+              </ReviewCard>
+            ))}
+          </ReviewsGrid>
+        ) : (
+          <EmptyState>
+            <MessageSquare />
+            <p>{t('home.reviews.emptyState')}</p>
+          </EmptyState>
+        )}
+
+        {/* Formulario para agregar reseña - Solo si está autenticado */}
+        <ReviewFormContainer>
+          <FormTitle>{t('home.reviews.formTitle')}</FormTitle>
+          
+          {user ? (
+            <Form onSubmit={handleSubmitReview}>
+              <FormGroup>
+                <Label>{t('home.reviews.nameLabel')}</Label>
+                <Input
+                  type="text"
+                  value={user.displayName || user.email || ''}
+                  disabled
                 />
-              ))}
-            </RatingSelector>
-          </FormGroup>
+              </FormGroup>
 
-          <FormGroup>
-            <Label>{t('home.reviews.commentLabel')}</Label>
-            <TextArea
-              value={newReview.comment}
-              onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
-              placeholder={t('home.reviews.commentPlaceholder')}
-              required
-            />
-          </FormGroup>
+              <FormGroup>
+                <Label>{t('home.reviews.ratingLabel')}</Label>
+                <RatingSelector>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <StarIcon
+                      key={star}
+                      $filled={star <= newReview.rating}
+                      onClick={() => setNewReview({...newReview, rating: star})}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  ))}
+                </RatingSelector>
+              </FormGroup>
 
-          <ButtonStyled $primary type="submit">
-            {t('home.reviews.submitButton')}
-          </ButtonStyled>
-        </Form>
-      ) : (
-        <LoginRequiredContainer>
-          <LoginIcon />
-          <div>
-            <FormTitle>{t('home.reviews.loginRequired')}</FormTitle>
-            <LoginMessage>
-              {t('home.reviews.loginMessage')}
-            </LoginMessage>
-          </div>
-          <Link href="/login">
-            <ButtonStyled $primary>
-              <LogIn size={18} style={{ marginRight: '8px' }} />
-              {t('home.reviews.loginButton')}
-            </ButtonStyled>
-          </Link>
-        </LoginRequiredContainer>
-      )}
-    </ReviewFormContainer>
-  </ReviewsSection>
+              <FormGroup>
+                <Label>{t('home.reviews.commentLabel')}</Label>
+                <TextArea
+                  value={newReview.comment}
+                  onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
+                  placeholder={t('home.reviews.commentPlaceholder')}
+                  required
+                />
+              </FormGroup>
 
-</PageContainer>
+              <ButtonStyled $primary type="submit">
+                {t('home.reviews.submitButton')}
+              </ButtonStyled>
+            </Form>
+          ) : (
+            <LoginRequiredContainer>
+              <LoginIcon />
+              <div>
+                <FormTitle>{t('home.reviews.loginRequired')}</FormTitle>
+                <LoginMessage>
+                  {t('home.reviews.loginMessage')}
+                </LoginMessage>
+              </div>
+              <Link href="/login">
+                <ButtonStyled $primary>
+                  <LogIn size={18} style={{ marginRight: '8px' }} />
+                  {t('home.reviews.loginButton')}
+                </ButtonStyled>
+              </Link>
+            </LoginRequiredContainer>
+          )}
+        </ReviewFormContainer>
+      </ReviewsSection>
+
+    </PageContainer>
   );
 }
+
+
