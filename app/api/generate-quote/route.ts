@@ -197,13 +197,6 @@ function calculatePaintingQuote(
     breakdown.push(`Ceiling painting (${rooms} room(s)): +$${cMin}–$${cMax}`);
   }
 
-  // ── 60% First-Installation Discount ─────────────────────────────────────
-  const subtotalMin = min;
-  const subtotalMax = max;
-  min = Math.round(min * 0.40);
-  max = Math.round(max * 0.40);
-  breakdown.push(`🏷️ 50% first-installation discount: −$${(subtotalMin - min).toLocaleString()}–$${(subtotalMax - max).toLocaleString()}`);
-
   return { min, max, breakdown };
 }
 
