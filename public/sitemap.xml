@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<urlset xmlns="[enlace sospechoso eliminado]">
+<!-- Página Principal -->
+<url>
+<loc>https://www.google.com/search?q=https://www.villasafesolutions.com/</loc>
+<lastmod>2026-03-15</lastmod>
+<priority>1.0</priority>
+</url>
+<!-- Página de Cotizaciones -->
+<url>
+<loc>https://www.google.com/search?q=https://www.villasafesolutions.com/quotes</loc>
+<lastmod>2026-03-15</lastmod>
+<priority>0.8</priority>
+</url>
+<!-- Página de Reservas -->
+<url>
+<loc>https://www.google.com/search?q=https://www.villasafesolutions.com/booking</loc>
+<lastmod>2026-03-15</lastmod>
+<priority>0.8</priority>
+</url>
+</urlset>

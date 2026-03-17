@@ -1,6 +1,5 @@
 {
-  "/api/send-booking-email/route": "app/api/send-booking-email/route.js",
-  "/quotes/page": "app/quotes/page.js",
+  "/api/generate-quote/route": "app/api/generate-quote/route.js",
   "/page": "app/page.js",
-  "/booking/page": "app/booking/page.js"
+  "/quotes/page": "app/quotes/page.js"
 }

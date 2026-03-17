@@ -10,12 +10,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/layout.js"
     ],
-    "/booking/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/booking/page.css",
-      "static/chunks/app/booking/page.js"
-    ],
     "/quotes/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
