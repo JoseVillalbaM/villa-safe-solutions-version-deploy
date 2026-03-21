@@ -1,7 +1,8 @@
 {
-  "/quotes/page": "app/quotes/page.js",
-  "/page": "app/page.js",
   "/login/page": "app/login/page.js",
-  "/services/page": "app/services/page.js",
-  "/servicespage/[serviceSlug]/page": "app/servicespage/[serviceSlug]/page.js"
+  "/register/page": "app/register/page.js",
+  "/booking/page": "app/booking/page.js",
+  "/page": "app/page.js",
+  "/api/payment-config/route": "app/api/payment-config/route.js",
+  "/services/page": "app/services/page.js"
 }
