@@ -1,6 +1,7 @@
 'use client'
 
 import { Facebook, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import Link from 'next/link'; // ← IMPORTAR Link de Next.js
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   FooterContainer,
@@ -21,7 +22,7 @@ import {
   CopyrightText,
 } from '@/components/ui/Footer.styles';
 
-// --- Iconos Personalizados (Adaptados para soportar el prop 'size' como lucide-react) ---
+// --- Iconos Personalizados ---
 
 const WhatsAppIcon = ({ size = 24, ...props }: any) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -52,22 +53,31 @@ const OfferUpIcon = ({ size = 24, ...props }: any) => (
 export default function Footer() {
   const { t } = useLanguage();
 
-  // Aquí agregamos las nuevas redes usando los componentes creados arriba
   const socialLinks = [
     { icon: Facebook, href: 'https://www.facebook.com/share/18MScXxRv8/?mibextid=wwXIfr', label: 'Facebook' },
     { icon: Instagram, href: 'https://www.instagram.com/villasafesolutions?igsh=aTlvbXl4aWhjeXow&utm_source=qr', label: 'Instagram' },
-    { icon: WhatsAppIcon, href: 'https://wa.me/17867346928', label: 'WhatsApp' }, // Cambia este link por tu número
-    { icon: PinterestIcon, href: 'https://www.pinterest.com/villaSafeSolutions/', label: 'Pinterest' }, // Cambia este link
-    { icon: TikTokIcon, href: 'https://www.tiktok.com/@villasafesolution?_r=1&_t=ZT-94RTXdz7g3p', label: 'TikTok' }, // Cambia este link
-    { icon: OfferUpIcon, href: 'https://offerup.co/profile/villasafesolutions', label: 'OfferUp' }, // Cambia este link
+    { icon: WhatsAppIcon, href: 'https://wa.me/17867346928', label: 'WhatsApp' },
+    { icon: PinterestIcon, href: 'https://www.pinterest.com/villaSafeSolutions/', label: 'Pinterest' },
+    { icon: TikTokIcon, href: 'https://www.tiktok.com/@villasafesolution?_r=1&_t=ZT-94RTXdz7g3p', label: 'TikTok' },
+    { icon: OfferUpIcon, href: 'https://offerup.co/profile/villasafesolutions', label: 'OfferUp' },
   ];
 
-  return (
+  // ← NUEVO: Array de políticas manteniendo la misma lógica de mapeo
+  const policyLinks = [
+    { href: '/privacy', label: 'Privacy Policy' },
+    { href: '/terms', label: 'Terms of Service' },
+    { href: '/refund-policy', label: 'Refund Policy' },
+  ];
+
+  // ... (resto del código igual hasta el return)
+
+return (
     <FooterContainer>
       <FooterContent>
         <FooterGrid>
+          {/* Sección 1: Contacto */}
           <FooterSection>
-            <SectionTitle></SectionTitle>
+            <SectionTitle>{t('footer.contact')}</SectionTitle>
             <ContactList>
               <ContactItem>
                 <Phone size={20} />
@@ -84,8 +94,9 @@ export default function Footer() {
             </ContactList>
           </FooterSection>
 
+          {/* Sección 2: Redes Sociales */}
           <FooterSection>
-            <SectionTitle></SectionTitle>
+            <SectionTitle>{t('footer.followUs')}</SectionTitle>
             <SocialGrid>
               {socialLinks.map((social) => {
                 const IconComponent = social.icon;
@@ -104,18 +115,73 @@ export default function Footer() {
             </SocialGrid>
           </FooterSection>
 
+          {/* Sección 3: Marca */}
           <BrandSection>
-            <SectionTitle>Villa Safe Solutions.</SectionTitle>
-            <BrandSubtitle></BrandSubtitle>
+            <SectionTitle>Villa Safe Solutions</SectionTitle>
+            <BrandSubtitle>{t('footer.tagline')}</BrandSubtitle>
             <div style={{ paddingTop: '0.5rem' }}>
               <LogoContainer>VS</LogoContainer>
             </div>
           </BrandSection>
         </FooterGrid>
 
+        {/* Sección de Políticas integrada en el footer */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: '2rem', 
+          marginTop: '2rem',
+          marginBottom: '1rem',
+          flexWrap: 'wrap'
+        }}>
+          <Link 
+            href="/privacy"
+            style={{
+              color: 'grey',
+              textDecoration: 'none',
+              fontSize: '0.875rem',
+              opacity: 0.8,
+              transition: 'opacity 0.2s',
+              
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+          >
+            {t('footer.privacyPolicy')}
+          </Link>
+          <Link 
+            href="/terms"
+            style={{
+              color: 'grey',
+              textDecoration: 'none',
+              fontSize: '0.875rem',
+              opacity: 0.8,
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+          >
+            {t('footer.termsOfService')}
+          </Link>
+          <Link 
+            href="/refund-policy"
+            style={{
+              color: 'grey',
+              textDecoration: 'none',
+              fontSize: '0.875rem',
+              opacity: 0.8,
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}
+          >
+            {t('footer.refundPolicy')}
+          </Link>
+        </div>
+
         <Copyright>
           <CopyrightText>
-            © {new Date().getFullYear()} {'Villa Safe Solutions.' }
+            © {new Date().getFullYear()} Villa Safe Solutions - {t('footer.copyright')}
           </CopyrightText>
         </Copyright>
       </FooterContent>

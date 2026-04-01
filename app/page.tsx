@@ -2,20 +2,31 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import styled from 'styled-components';
-import { ArrowRight, Star, MessageSquare, LogIn } from 'lucide-react';
+import styled, { keyframes } from 'styled-components';
+import { ArrowRight, Star, MessageSquare, LogIn, X, Loader2, Trash2 } from 'lucide-react';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
+import { auth, db, storage } from '@/lib/firebase';
 import { 
   collection, addDoc, deleteDoc, 
   doc, query, orderBy, onSnapshot 
 } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { ButtonStyled } from '@/components/ui/ButtonStyled';
 import { useLanguage } from '@/contexts/LanguageContext';
 import SliderGallery from '@/components/SliderGallery';
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
 const ADMIN_EMAIL = 'info@villasafesolutions.com';
+
+// ─── Animaciones ──────────────────────────────────────────────────────────────
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 interface Review {
@@ -26,6 +37,7 @@ interface Review {
   comment: string;
   date: string;
   userPhoto?: string;
+  images?: string[];
 }
 
 // ─── Estilos ──────────────────────────────────────────────────────────────────
@@ -277,11 +289,38 @@ const ReviewsSection = styled(SectionContainer)`
   background-color: ${({ theme }) => theme.colors.secondaryBg};
 `;
 
+const ReviewsContainer = styled.div`
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  margin-top: 2rem;
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: ${({ theme }) => theme.colors.secondaryBg};
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: ${({ theme }) => theme.colors.primary};
+    border-radius: 10px;
+    
+    &:hover {
+      background: ${({ theme }) => theme.colors.secondary};
+    }
+  }
+  
+  scrollbar-width: thin;
+  scrollbar-color: ${({ theme }) => theme.colors.primary} ${({ theme }) => theme.colors.secondaryBg};
+`;
+
 const ReviewsGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
-  margin-top: 3rem;
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(2, 1fr);
@@ -329,24 +368,6 @@ const ReviewHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
-`;
-
-const DeleteButton = styled.button`
-  align-self: flex-end;
-  background: transparent;
-  border: 1px solid ${({ theme }) => theme.colors.palette.skyBlue}40;
-  color: ${({ theme }) => theme.colors.textSecondary};
-  padding: 0.35rem 0.75rem;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: #ef4444;
-    color: #ef4444;
-  }
 `;
 
 const UserAvatar = styled.div`
@@ -406,6 +427,49 @@ const ReviewComment = styled.p`
   line-height: 1.6;
   color: ${({ theme }) => theme.colors.textSecondary};
   margin: 0;
+`;
+
+const ReviewImagesContainer = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+`;
+
+const ReviewImage = styled.img`
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid ${({ theme }) => theme.colors.borders.secondary};
+  
+  &:hover {
+    transform: scale(1.05);
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+const DeleteButton = styled.button`
+  align-self: flex-end;
+  background: transparent;
+  border: 1px solid ${({ theme }) => theme.colors.palette.skyBlue}40;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+    color: #ef4444;
+  }
 `;
 
 const ReviewFormContainer = styled.div`
@@ -508,6 +572,89 @@ const RatingSelector = styled.div`
   gap: 0.5rem;
 `;
 
+const FileInput = styled.input`
+  padding: 0.875rem;
+  border-radius: 12px;
+  border: 1px solid ${({ theme }) => theme.colors.borders.secondary};
+  background-color: ${({ theme }) => theme.colors.secondaryBg};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: 0.9rem;
+  cursor: pointer;
+  
+  &::file-selector-button {
+    background: ${({ theme }) => theme.colors.primary};
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-right: 1rem;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: ${({ theme }) => theme.colors.secondary};
+    }
+  }
+  
+  @media (max-width: 768px) {
+    font-size: 0.8rem;
+    
+    &::file-selector-button {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+    }
+  }
+`;
+
+const ImagesPreviewContainer = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+`;
+
+const PreviewImage = styled.div`
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid ${({ theme }) => theme.colors.primary};
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  @media (max-width: 768px) {
+    width: 70px;
+    height: 70px;
+  }
+`;
+
+const RemoveImageButton = styled.button`
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: scale(1.1);
+    background: #dc2626;
+  }
+`;
+
 const EmptyState = styled.div`
   text-align: center;
   padding: 3rem 1rem;
@@ -556,12 +703,71 @@ const LoginMessage = styled.p`
   line-height: 1.6;
 `;
 
+const ImageModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  cursor: pointer;
+`;
+
+const ModalImage = styled.img`
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+`;
+
+const UploadProgressContainer = styled.div`
+  margin-top: 0.5rem;
+`;
+
+const ProgressBar = styled.div`
+  height: 4px;
+  background: #333;
+  border-radius: 2px;
+  overflow: hidden;
+`;
+
+const ProgressFill = styled.div<{ $width: number }>`
+  width: ${({ $width }) => $width}%;
+  height: 100%;
+  background: ${({ theme }) => theme.colors.primary};
+  transition: width 0.3s ease;
+`;
+
+const ProgressText = styled.p`
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+const SpinnerIcon = styled(Loader2)`
+  animation: ${spin} 1s linear infinite;
+  margin-right: 8px;
+`;
+
+const SelectedImagesInfo = styled.p`
+  font-size: 0.75rem;
+  color: ${({ theme }) => theme.colors.primary};
+  margin-top: 0.5rem;
+`;
+
 // ─── Componente Principal ─────────────────────────────────────────────────────
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
-  const { t } = useLanguage();
+  const [newReview, setNewReview] = useState({ rating: 5, comment: '', images: [] as File[] });
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const { t, language } = useLanguage();
 
   // Auth listener
   useEffect(() => {
@@ -584,68 +790,154 @@ export default function HomePage() {
     return () => unsubscribe();
   }, []);
 
+  // Función para mostrar alertas traducidas
+  const showAlert = (messageKey: string, isError: boolean = false) => {
+    const message = t(messageKey as any);
+    if (isError) {
+      alert(message);
+    } else {
+      alert(message);
+    }
+  };
+
+  // Función para subir imágenes a Firebase Storage
+  const uploadImages = async (files: File[]): Promise<string[]> => {
+    const uploadedUrls: string[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        if (!user?.uid) {
+          throw new Error('Usuario no autenticado');
+        }
+        
+        const timestamp = Date.now();
+        const randomString = Math.random().toString(36).substring(2, 15);
+        const safeFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const filePath = `reviews/${user.uid}/${timestamp}_${randomString}_${safeFileName}`;
+        
+        const storageRef = ref(storage, filePath);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadUrl = await getDownloadURL(snapshot.ref);
+        uploadedUrls.push(downloadUrl);
+        
+        setUploadProgress(((i + 1) / files.length) * 100);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        throw new Error(`Error al subir la imagen ${file.name}`);
+      }
+    }
+    
+    return uploadedUrls;
+  };
+
   // Enviar reseña
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    
-
     if (!user) {
-      alert(t('home.reviews.loginRequired'));
+      showAlert('home.reviews.loginRequired', true);
       return;
     }
     if (!newReview.comment.trim()) {
-      alert('Por favor completa el comentario');
+      alert(language === 'es' ? 'Por favor completa el comentario' : 'Please complete the comment');
       return;
     }
-      
+    
     try {
+      setUploadingImages(true);
+      setUploadProgress(0);
+      
+      let imageUrls: string[] = [];
+      if (newReview.images.length > 0) {
+        imageUrls = await uploadImages(newReview.images);
+      }
 
-      console.log('Intentando guardar en Firestore...');
-      console.log('DB:', db);
-      console.log('User:', user?.email);
-
-
-      const docRef = await addDoc(collection(db, 'reviews'), {
-       userName: user.displayName || user.email?.split('@')[0] || 'Usuario',
+      await addDoc(collection(db, 'reviews'), {
+        userName: user.displayName || user.email?.split('@')[0] || (language === 'es' ? 'Usuario' : 'User'),
         userEmail: user.email || '',
         rating: newReview.rating,
         comment: newReview.comment,
         date: new Date().toLocaleDateString(
-          t('home.reviews.title') === 'Testimonios y Reseñas' ? 'es-ES' : 'en-US',
+          language === 'es' ? 'es-ES' : 'en-US',
           { year: 'numeric', month: 'long', day: 'numeric' }
         ),
         userPhoto: user.photoURL || null,
         createdAt: new Date(),
+        images: imageUrls,
       });
-      setNewReview({ rating: 5, comment: '' });
-      console.log('✅ Reseña guardada con ID:', docRef.id); // ← si llega aquí, sí se guardó
-  setNewReview({ rating: 5, comment: '' });
+      
+      setNewReview({ rating: 5, comment: '', images: [] });
+      showAlert('home.reviews.successMessage', false);
     } catch (error) {
       console.error('Error al guardar reseña:', error);
-      alert('Hubo un error al guardar tu reseña. Intenta de nuevo.');
+      showAlert('home.reviews.errorMessage', true);
+    } finally {
+      setUploadingImages(false);
+      setUploadProgress(0);
     }
   };
 
-  // Eliminar reseña
-  const handleDeleteReview = async (reviewId: string) => {
-    const confirmed = confirm('¿Seguro que quieres eliminar esta reseña?');
+  // Manejar selección de imágenes desde el dispositivo
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const maxSize = 5 * 1024 * 1024;
+    const validFiles = files.filter(file => file.size <= maxSize);
+    
+    if (validFiles.length !== files.length) {
+      showAlert('home.reviews.maxSizeAlert', true);
+    }
+    
+    if (newReview.images.length + validFiles.length > 5) {
+      showAlert('home.reviews.maxImagesAlert', true);
+      return;
+    }
+    
+    setNewReview({ ...newReview, images: [...newReview.images, ...validFiles] });
+  };
+
+  // Eliminar imagen de la lista antes de subir
+  const removeImage = (index: number) => {
+    const newImages = [...newReview.images];
+    newImages.splice(index, 1);
+    setNewReview({ ...newReview, images: newImages });
+  };
+
+  // Eliminar reseña completa
+  const handleDeleteReview = async (reviewId: string, imageUrls?: string[]) => {
+    const confirmed = confirm(t('home.reviews.deleteConfirm'));
     if (!confirmed) return;
 
     try {
+      if (imageUrls && imageUrls.length > 0) {
+        for (const url of imageUrls) {
+          try {
+            const decodedUrl = decodeURIComponent(url);
+            const pathMatch = decodedUrl.match(/\/o\/(.+?)\?/);
+            if (pathMatch && pathMatch[1]) {
+              const filePath = pathMatch[1];
+              const fileRef = ref(storage, filePath);
+              await deleteObject(fileRef);
+            }
+          } catch (error) {
+            console.error('Error deleting image:', error);
+          }
+        }
+      }
+      
       await deleteDoc(doc(db, 'reviews', reviewId));
+      showAlert('home.reviews.deleteSuccess', false);
     } catch (error) {
       console.error('Error al eliminar reseña:', error);
-      alert('No se pudo eliminar la reseña.');
+      alert(language === 'es' ? 'No se pudo eliminar la reseña.' : 'Could not delete review.');
     }
   };
 
-  const displayedReviews = reviews.slice(0, 4);
+  const allReviews = reviews;
 
   return (
     <PageContainer>
-
-      {/* 1. Hero */}
+      {/* Hero Section */}
       <HeroContainer>
         <HeroTitle>{t('home.hero.title')}</HeroTitle>
         <HeroSubtitle>{t('home.hero.subtitle')}</HeroSubtitle>
@@ -662,14 +954,14 @@ export default function HomePage() {
         </ButtonRow>
       </HeroContainer>
 
-      {/* 2. Servicios */}
+      {/* Services Section */}
       <ServicesSection>
         <SectionTitle>{t('home.services.title')}</SectionTitle>
         <SectionSubtitle>{t('home.services.subtitle')}</SectionSubtitle>
         <SliderGallery />
       </ServicesSection>
 
-      {/* 3. Contacto */}
+      {/* Contact Section */}
       <SectionContainer>
         <SectionTitle>{t('home.contact.title')}</SectionTitle>
         <SectionSubtitle>{t('home.contact.subtitle')}</SectionSubtitle>
@@ -697,51 +989,69 @@ export default function HomePage() {
         </ContactGrid>
       </SectionContainer>
 
-      {/* 4. Reseñas */}
+      {/* Reviews Section */}
       <ReviewsSection>
         <SectionTitle>{t('home.reviews.title')}</SectionTitle>
         <SectionSubtitle>{t('home.reviews.subtitle')}</SectionSubtitle>
 
-        {displayedReviews.length > 0 ? (
-          <ReviewsGrid>
-            {displayedReviews.map((review) => (
-              <ReviewCard key={review.id}>
-                <ReviewHeader>
-                  <UserAvatar>
-                    {review.userName.charAt(0).toUpperCase()}
-                  </UserAvatar>
-                  <UserInfo>
-                    <UserName>{review.userName}</UserName>
-                    <ReviewDate>{review.date}</ReviewDate>
-                  </UserInfo>
-                </ReviewHeader>
+        <ReviewsContainer>
+          {allReviews.length > 0 ? (
+            <ReviewsGrid>
+              {allReviews.map((review) => (
+                <ReviewCard key={review.id}>
+                  <ReviewHeader>
+                    <UserAvatar>
+                      {review.userName.charAt(0).toUpperCase()}
+                    </UserAvatar>
+                    <UserInfo>
+                      <UserName>{review.userName}</UserName>
+                      <ReviewDate>{review.date}</ReviewDate>
+                    </UserInfo>
+                  </ReviewHeader>
 
-                <RatingContainer>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <StarIcon key={star} $filled={star <= review.rating} />
-                  ))}
-                </RatingContainer>
+                  <RatingContainer>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <StarIcon key={star} $filled={star <= review.rating} />
+                    ))}
+                  </RatingContainer>
 
-                <ReviewComment>{review.comment}</ReviewComment>
+                  <ReviewComment>{review.comment}</ReviewComment>
 
-                {/* Botón eliminar: solo admin o dueño de la reseña */}
-                {user &&
-                  (user.email === ADMIN_EMAIL || user.email === review.userEmail) && (
-                    <DeleteButton onClick={() => handleDeleteReview(review.id)}>
-                      🗑 Eliminar
-                    </DeleteButton>
+                  {review.images && review.images.length > 0 && (
+                    <ReviewImagesContainer>
+                      {review.images.map((img, idx) => (
+                        <ReviewImage
+                          key={idx}
+                          src={img}
+                          alt={`Review image ${idx + 1}`}
+                          onClick={() => setSelectedImage(img)}
+                          onError={(e) => {
+                            console.error('Error loading image:', img);
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ))}
+                    </ReviewImagesContainer>
                   )}
-              </ReviewCard>
-            ))}
-          </ReviewsGrid>
-        ) : (
-          <EmptyState>
-            <MessageSquare />
-            <p>{t('home.reviews.emptyState')}</p>
-          </EmptyState>
-        )}
 
-        {/* Formulario */}
+                  {user &&
+                    (user.email === ADMIN_EMAIL || user.email === review.userEmail) && (
+                      <DeleteButton onClick={() => handleDeleteReview(review.id, review.images)}>
+                        <Trash2 size={14} />
+                        {language === 'es' ? 'Eliminar reseña' : 'Delete review'}
+                      </DeleteButton>
+                    )}
+                </ReviewCard>
+              ))}
+            </ReviewsGrid>
+          ) : (
+            <EmptyState>
+              <MessageSquare />
+              <p>{t('home.reviews.emptyState')}</p>
+            </EmptyState>
+          )}
+        </ReviewsContainer>
+
         <ReviewFormContainer>
           <FormTitle>{t('home.reviews.formTitle')}</FormTitle>
 
@@ -780,8 +1090,65 @@ export default function HomePage() {
                 />
               </FormGroup>
 
-              <ButtonStyled $primary type="submit" onClick={handleSubmitReview}>
-                {t('home.reviews.submitButton')}
+              <FormGroup>
+                <Label>{t('home.reviews.uploadLabel')}</Label>
+                <FileInput
+                  type="file"
+                  accept="image/jpeg, image/png, image/jpg, image/webp"
+                  multiple
+                  onChange={handleImageSelect}
+                  disabled={uploadingImages}
+                />
+                <p style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.25rem' }}>
+                  {t('home.reviews.uploadHint')}
+                </p>
+                
+                {newReview.images.length > 0 && (
+                  <>
+                    <ImagesPreviewContainer>
+                      {newReview.images.map((file, idx) => (
+                        <PreviewImage key={idx}>
+                          <img 
+                            src={URL.createObjectURL(file)} 
+                            alt={`Preview ${idx}`}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                          <RemoveImageButton 
+                            onClick={() => removeImage(idx)}
+                            type="button"
+                          >
+                            <X size={14} />
+                          </RemoveImageButton>
+                        </PreviewImage>
+                      ))}
+                    </ImagesPreviewContainer>
+                    <SelectedImagesInfo>
+                      ✅ {newReview.images.length} {t('home.reviews.imagesSelected')}
+                    </SelectedImagesInfo>
+                  </>
+                )}
+
+                {uploadingImages && (
+                  <UploadProgressContainer>
+                    <ProgressBar>
+                      <ProgressFill $width={uploadProgress} />
+                    </ProgressBar>
+                    <ProgressText>
+                      {t('home.reviews.uploading')} {Math.round(uploadProgress)}%
+                    </ProgressText>
+                  </UploadProgressContainer>
+                )}
+              </FormGroup>
+
+              <ButtonStyled $primary type="submit" disabled={uploadingImages}>
+                {uploadingImages ? (
+                  <>
+                    <SpinnerIcon size={18} />
+                    {t('home.reviews.uploading')}
+                  </>
+                ) : (
+                  t('home.reviews.submitButton')
+                )}
               </ButtonStyled>
             </Form>
           ) : (
@@ -802,6 +1169,11 @@ export default function HomePage() {
         </ReviewFormContainer>
       </ReviewsSection>
 
+      {selectedImage && (
+        <ImageModal onClick={() => setSelectedImage(null)}>
+          <ModalImage src={selectedImage} alt="Imagen ampliada" />
+        </ImageModal>
+      )}
     </PageContainer>
   );
 }

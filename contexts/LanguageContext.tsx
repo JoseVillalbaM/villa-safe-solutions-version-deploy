@@ -46,6 +46,17 @@ type TranslationKey =
   | "home.reviews.loginRequired"
   | "home.reviews.loginButton"
   | "home.reviews.loginMessage"
+  | "home.reviews.uploadLabel"
+  | "home.reviews.uploadHint"
+  | "home.reviews.imagesSelected"
+  | "home.reviews.uploading"
+  | "home.reviews.maxImagesAlert"
+  | "home.reviews.maxSizeAlert"
+  | "home.reviews.successMessage"
+  | "home.reviews.deleteSuccess"
+  | "home.reviews.deleteConfirm"
+  | "home.reviews.errorMessage"
+
   // --- Traducciones para Auth (Login/Register) ---
   | "auth.login"
   | "auth.register"
@@ -88,7 +99,15 @@ type TranslationKey =
   | "contact.form.namePlaceholder"
   | "contact.form.emailPlaceholder"
   | "contact.form.phonePlaceholder"
-  | "contact.form.messagePlaceholder";
+  | "contact.form.messagePlaceholder"
+  // --- Traducciones para el Footer ---
+  | "footer.contact"
+  | "footer.followUs"
+  | "footer.tagline"
+  | "footer.privacyPolicy"
+  | "footer.termsOfService"
+  | "footer.refundPolicy"
+  | "footer.copyright";
 
 const translations: Record<'es' | 'en', Record<TranslationKey, string>> = {
   es: {
@@ -134,6 +153,18 @@ const translations: Record<'es' | 'en', Record<TranslationKey, string>> = {
     "home.reviews.loginRequired": "Inicia sesión para dejar una reseña",
     "home.reviews.loginButton": "Iniciar Sesión",
     "home.reviews.loginMessage": "Solo los clientes registrados pueden dejar reseñas sobre nuestros servicios.",
+    "home.reviews.uploadLabel": "📸 Subir imágenes de tu trabajo (máx 5, 5MB c/u)",
+    "home.reviews.uploadHint": "Puedes seleccionar varias imágenes a la vez desde tu galería",
+    "home.reviews.imagesSelected": "imagen(es) seleccionada(s)",
+    "home.reviews.uploading": "Subiendo imágenes...",
+    "home.reviews.maxImagesAlert": "Máximo 5 imágenes por reseña",
+    "home.reviews.maxSizeAlert": "Algunas imágenes superan el tamaño máximo de 5MB",
+    "home.reviews.successMessage": "¡Reseña guardada con éxito!",
+    "home.reviews.deleteSuccess": "Reseña eliminada con éxito",
+    "home.reviews.deleteConfirm": "¿Seguro que quieres eliminar esta reseña?",
+    "home.reviews.errorMessage": "Hubo un error al guardar tu reseña. Intenta de nuevo.",
+
+
     // --- Auth ---
     "auth.firstName": "Nombre",
     "auth.lastName": "Apellido", 
@@ -177,6 +208,14 @@ const translations: Record<'es' | 'en', Record<TranslationKey, string>> = {
     "contact.form.emailPlaceholder": "juan@ejemplo.com",
     "contact.form.phonePlaceholder": "+1 (555) 123-4567",
     "contact.form.messagePlaceholder": "Cuéntanos sobre tu proyecto...",
+    // --- Footer ---
+    "footer.contact": "Contacto",
+    "footer.followUs": "Síguenos",
+    "footer.tagline": "Tu socio de confianza en seguridad",
+    "footer.privacyPolicy": "Política de Privacidad",
+    "footer.termsOfService": "Términos de Servicio",
+    "footer.refundPolicy": "Política de Reembolso",
+    "footer.copyright": "Todos los derechos reservados",
   },
   en: {
     "header.services": "Services",
@@ -221,6 +260,16 @@ const translations: Record<'es' | 'en', Record<TranslationKey, string>> = {
     "home.reviews.loginRequired": "Log in to leave a review",
     "home.reviews.loginButton": "Log In",
     "home.reviews.loginMessage": "Only registered customers can leave reviews about our services.",
+    "home.reviews.uploadLabel": "📸 Upload your work images (max 5, 5MB each)",
+    "home.reviews.uploadHint": "You can select multiple images at once from your gallery",
+    "home.reviews.imagesSelected": "image(s) selected",
+    "home.reviews.uploading": "Uploading images...",
+    "home.reviews.maxImagesAlert": "Maximum 5 images per review",
+    "home.reviews.maxSizeAlert": "Some images exceed the maximum size of 5MB",
+     "home.reviews.successMessage": "Review saved successfully!",
+    "home.reviews.deleteSuccess": "Review deleted successfully",
+    "home.reviews.deleteConfirm": "Are you sure you want to delete this review?",
+    "home.reviews.errorMessage": "There was an error saving your review. Please try again.",
     // --- Auth ---
     "auth.firstName": "First Name",
     "auth.lastName": "Last Name",
@@ -264,6 +313,14 @@ const translations: Record<'es' | 'en', Record<TranslationKey, string>> = {
     "contact.form.emailPlaceholder": "john@example.com",
     "contact.form.phonePlaceholder": "+1 (555) 123-4567",
     "contact.form.messagePlaceholder": "Tell us about your project...",
+    // --- Footer ---
+    "footer.contact": "Contact",
+    "footer.followUs": "Follow Us",
+    "footer.tagline": "Your trusted security partner",
+    "footer.privacyPolicy": "Privacy Policy",
+    "footer.termsOfService": "Terms of Service",
+    "footer.refundPolicy": "Refund Policy",
+    "footer.copyright": "All rights reserved",
   },
 };
 

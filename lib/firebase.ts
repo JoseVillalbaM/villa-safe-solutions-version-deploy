@@ -1,7 +1,8 @@
-// lib/firebase.ts o firebase/config.ts
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+// lib/firebase.ts
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage'; // ← Agrega esta importación
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -18,5 +19,14 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 // Inicializar servicios
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app); // ← Agrega esta línea (es lo que faltaba)
 
-export { auth, db };
+// Exportar servicios
+export { auth, db, storage };
+
+// Para debugging - verifica que todo está bien
+console.log('Firebase initialized:', {
+  auth: !!auth,
+  db: !!db,
+  storage: !!storage
+});
