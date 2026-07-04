@@ -52,6 +52,8 @@ const galleryData: ServiceSectionData[] = [
           { src: 'assets/gallery/tv-install/img-modern/IMG_1335.jpg', alt: "Modern Apartment TV" },
           { src: 'assets/gallery/tv-install/img-modern/IMG_1339.jpg', alt: "Modern Apartment TV" },
           { src: 'assets/gallery/tv-install/img-modern/IMG_1938.jpg', alt: "Modern Apartment TV" },
+          { src: 'assets/gallery/tv-install/img-modern/IMG_4485.jpg', alt: "Modern TV Installation" },
+          { src: 'assets/gallery/tv-install/img-modern/IMG_4486.jpg', alt: "Modern TV Installation" },
         ]
 
       },
@@ -65,6 +67,9 @@ const galleryData: ServiceSectionData[] = [
           { src:  'assets/gallery/tv-install/img-standard/IMG_2374.jpg', alt: "Standard Square Mount and Panel " },
           { src:  'assets/gallery/tv-install/img-standard/IMG_2644.jpg', alt: "Standard Panel Hall Mirror" },
           { src:  'assets/gallery/tv-install/img-standard/IMG_2791.jpg', alt: "Standard Panel Kitchen Island " },
+          { src:  'assets/gallery/tv-install/img-standard/IMG_4484.jpg', alt: "Standard TV Installation" },
+          { src:  'assets/gallery/tv-install/img-standard/IMG_4487.jpg', alt: "Standard TV Installation" },
+          { src:  'assets/gallery/tv-install/img-standard/IMG_4488.jpg', alt: "Standard TV Installation" },
         ]
       }
     ]
