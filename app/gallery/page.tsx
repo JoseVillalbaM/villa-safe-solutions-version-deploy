@@ -98,7 +98,39 @@ const galleryData: ServiceSectionData[] = [
       { src: 'assets/gallery/general/IMG_2672.jpg', alt: "Curtain Installation" },
       { src: 'assets/gallery/general/IMG_2673.jpg', alt: "Home Repairs" },
     ]
-  }
+  },
+  {
+    id: 'new-materials',
+    translationKey: 'newMaterials',
+    hasSubcategories: true,
+    subcategories: [
+      {
+        key: 'acanalados',
+        images: [
+          { src: 'assets/materials/acanalados/paleta-colores.png', alt: 'Paleta de colores acanalados PVC' },
+          { src: 'assets/materials/acanalados/cafe-madera.png',    alt: 'Acanalado café madera' },
+          { src: 'assets/materials/acanalados/gris-oscuro.png',    alt: 'Acanalado gris oscuro' },
+          { src: 'assets/materials/acanalados/blanco.png',         alt: 'Acanalado blanco' },
+          { src: 'assets/materials/acanalados/madera-clara.png',   alt: 'Acanalado madera clara' },
+          { src: 'assets/materials/acanalados/beige-lino.png',     alt: 'Acanalado beige lino' },
+          { src: 'assets/materials/acanalados/negro.png',          alt: 'Acanalado negro' },
+          { src: 'assets/materials/acanalados/nogal.png',          alt: 'Acanalado nogal' },
+          { src: 'assets/materials/acanalados/gris-madera.png',    alt: 'Acanalado gris madera' },
+          { src: 'assets/materials/acanalados/gris-textura.png',   alt: 'Acanalado gris textura' },
+        ],
+      },
+      {
+        key: 'marmolPvc',
+        images: [
+          { src: 'assets/materials/marmol-pvc/gris-marmol.png',       alt: 'Mármol PVC gris' },
+          { src: 'assets/materials/marmol-pvc/calacatta-blanco.png',   alt: 'Mármol PVC Calacatta blanco' },
+          { src: 'assets/materials/marmol-pvc/beige-dorado.png',       alt: 'Mármol PVC beige dorado' },
+          { src: 'assets/materials/marmol-pvc/crema.png',              alt: 'Mármol PVC crema' },
+          { src: 'assets/materials/marmol-pvc/blanco-venas.png',       alt: 'Mármol PVC blanco venas oscuras' },
+        ],
+      },
+    ],
+  },
 ];
 
 // --- TRADUCCIONES ---
@@ -125,6 +157,12 @@ const galleryTranslations: any = {
     "general.subtitle": "Reparaciones e instalaciones varias.",
     "general.cta": "¿Necesitas ayuda con reparaciones en casa?",
     "general.btn": "Solicitar Servicio",
+    "newMaterials.title": "Materiales Nuevos",
+    "newMaterials.subtitle": "Los últimos materiales disponibles para tu proyecto.",
+    "newMaterials.acanalados": "Paneles Acanalados PVC",
+    "newMaterials.marmolPvc": "Mármol en PVC",
+    "newMaterials.cta": "¿Te gustan estos materiales? Agéndalos en tu próxima instalación.",
+    "newMaterials.btn": "Reservar con estos Materiales",
   },
   en: {
     "page.title": "Our Gallery",
@@ -148,6 +186,12 @@ const galleryTranslations: any = {
     "general.subtitle": "Various repairs and installations.",
     "general.cta": "Need help with home repairs?",
     "general.btn": "Request Service",
+    "newMaterials.title": "New Materials",
+    "newMaterials.subtitle": "The latest materials available for your project.",
+    "newMaterials.acanalados": "PVC Grooved Panels",
+    "newMaterials.marmolPvc": "PVC Marble Panels",
+    "newMaterials.cta": "Like these materials? Book your next installation with them.",
+    "newMaterials.btn": "Book with These Materials",
   }
 };
 

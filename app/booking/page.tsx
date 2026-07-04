@@ -1091,6 +1091,35 @@ const BookingPage = () => {
       ],
       aforo: 25,
     },
+    {
+      id: 'acanalados-pvc',
+      name: t.materials['acanalados-pvc'],
+      images: [
+        'assets/materials/acanalados/paleta-colores.png',
+        'assets/materials/acanalados/cafe-madera.png',
+        'assets/materials/acanalados/gris-oscuro.png',
+        'assets/materials/acanalados/blanco.png',
+        'assets/materials/acanalados/madera-clara.png',
+        'assets/materials/acanalados/beige-lino.png',
+        'assets/materials/acanalados/negro.png',
+        'assets/materials/acanalados/nogal.png',
+        'assets/materials/acanalados/gris-madera.png',
+        'assets/materials/acanalados/gris-textura.png',
+      ],
+      aforo: 100,
+    },
+    {
+      id: 'marmol-pvc',
+      name: t.materials['marmol-pvc'],
+      images: [
+        'assets/materials/marmol-pvc/gris-marmol.png',
+        'assets/materials/marmol-pvc/calacatta-blanco.png',
+        'assets/materials/marmol-pvc/beige-dorado.png',
+        'assets/materials/marmol-pvc/crema.png',
+        'assets/materials/marmol-pvc/blanco-venas.png',
+      ],
+      aforo: 100,
+    },
   ], [t]);
 
   const getAvailableServices = (): Service[] => {

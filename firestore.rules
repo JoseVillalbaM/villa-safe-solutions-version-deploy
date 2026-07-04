@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Admin check ─────────────────────────────────────────────────────────────
+    // The admins collection is managed manually from the Firebase Console.
+    // Add a document admins/{uid} to grant admin rights to a user.
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Authenticated user with a verified email address
+    function isVerifiedUser() {
+      return request.auth != null &&
+        request.auth.token.email_verified == true;
+    }
+
+    // ── Reviews ─────────────────────────────────────────────────────────────────
+    // Public read. Verified users can submit their own review.
+    // Only the original author or an admin can update / delete.
+    match /reviews/{reviewId} {
+      allow read: if true;
+
+      allow create: if isVerifiedUser()
+        && request.resource.data.uid       == request.auth.uid
+        && request.resource.data.userEmail == request.auth.token.email
+        && request.resource.data.text      is string
+        && request.resource.data.text.size()  >= 1
+        && request.resource.data.text.size()  <= 1000
+        && request.resource.data.rating    is number
+        && request.resource.data.rating    >= 1
+        && request.resource.data.rating    <= 5;
+
+      allow update, delete: if request.auth != null &&
+        (request.auth.uid == resource.data.uid || isAdmin());
+    }
+
+    // ── Contact messages ─────────────────────────────────────────────────────────
+    // Anyone can submit the contact form (create).
+    // Only admin can read the inbox or delete entries.
+    match /messages/{messageId} {
+      allow create: if request.resource.data.name    is string
+        && request.resource.data.name.size()    >= 1
+        && request.resource.data.name.size()    <= 100
+        && request.resource.data.email          is string
+        && request.resource.data.email.size()   <= 200
+        && request.resource.data.message        is string
+        && request.resource.data.message.size() >= 1
+        && request.resource.data.message.size() <= 2000;
+
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ── Materials (new section — Part 2) ─────────────────────────────────────────
+    // Public read so all visitors can see new materials.
+    // Only admin can upload or remove entries.
+    match /materials/{materialId} {
+      allow read: if true;
+
+      allow create: if isAdmin()
+        && request.resource.data.title    is string
+        && request.resource.data.title.size() >= 1
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.uid      == request.auth.uid;
+
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Admins collection ────────────────────────────────────────────────────────
+    // The collection itself is readable only by other admins.
+    // Never writable from the client — use the Firebase Console to add UIDs.
+    match /admins/{uid} {
+      allow read:  if isAdmin();
+      allow write: if false;
+    }
+  }
+}

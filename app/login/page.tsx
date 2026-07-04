@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
 import Link from 'next/link';
@@ -15,7 +15,7 @@ import {
   CardContentStyled,
   CardFooterStyled,
 } from '@/components/ui/CardStyled';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const LoginContainer = styled.div`
@@ -39,6 +39,13 @@ const ErrorMessage = styled.p`
   text-align: center;
 `;
 
+const SuccessMessage = styled.p`
+  color: ${({ theme }) => theme.colors.palette.skyBlue};
+  font-size: 0.875rem;
+  margin-top: 1rem;
+  text-align: center;
+`;
+
 const FooterText = styled.p`
   font-size: 0.875rem;
   text-align: center;
@@ -54,7 +61,23 @@ const StyledLink = styled(Link)`
   }
 `;
 
-// Componentes extendidos para los nuevos estilos
+const ForgotLink = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 0.8rem;
+  text-decoration: underline;
+  text-align: right;
+  width: 100%;
+  margin-top: 0.25rem;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.palette.skyBlue};
+  }
+`;
+
 const StyledCard = styled(CardStyled)`
   box-shadow: 
     0 0 20px ${({ theme }) => theme.colors.palette.skyBlue}40,
@@ -97,29 +120,48 @@ const GradientTitle = styled(CardTitleStyled)`
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-fill-color: transparent;
+  
 `;
+
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_SECONDS = 30;
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [forgotMode, setForgotMode] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [lockoutRemaining, setLockoutRemaining] = useState(0);
   const router = useRouter();
   const { t } = useLanguage();
 
+  useEffect(() => {
+    if (lockoutRemaining <= 0) return;
+    const timer = setTimeout(() => setLockoutRemaining((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [lockoutRemaining]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockoutRemaining > 0) return;
     setError(null);
 
     try {
-      console.log('Intentando iniciar sesión con:', email);
       await signInWithEmailAndPassword(auth, email, password);
-      console.log('Inicio de sesión exitoso');
+      setAttempts(0);
       router.push('/');
     } catch (err: any) {
-      console.error('Error completo:', err);
-      console.error('Código de error:', err.code);
-
+      const next = attempts + 1;
+      setAttempts(next);
+      if (next >= MAX_ATTEMPTS) {
+        setAttempts(0);
+        setLockoutRemaining(LOCKOUT_SECONDS);
+        setError(null);
+        return;
+      }
       switch (err.code) {
         case 'auth/user-not-found':
           setError(t('auth.error.userNotFound'));
@@ -134,8 +176,35 @@ export default function LoginPage() {
           setError(t('auth.error.wrongPassword'));
           break;
         default:
+          setError(t('auth.error.generic'));
+      }
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      setError('Enter your email address above first.');
+      return;
+    }
+    setResetLoading(true);
+    setError(null);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setResetSuccess(true);
+    } catch (err: any) {
+      switch (err.code) {
+        case 'auth/user-not-found':
+          setError(t('auth.error.userNotFound'));
+          break;
+        case 'auth/invalid-email':
+          setError(t('auth.error.invalidEmail'));
+          break;
+        default:
           setError(`${t('auth.error.generic')}: ${err.message}`);
       }
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -143,40 +212,99 @@ export default function LoginPage() {
     <LoginContainer>
       <StyledCard style={{ width: '100%', maxWidth: '400px' }}>
         <CardHeaderStyled>
-          <GradientTitle>{t('auth.login')}</GradientTitle>
+          <GradientTitle>
+            {forgotMode ? 'Reset Password' : t('auth.login')}
+          </GradientTitle>
         </CardHeaderStyled>
+
         <CardContentStyled>
-          <form onSubmit={handleLogin}>
-            <FormGrid>
-              <div>
-                <LabelStyled htmlFor="email">{t('auth.email')}</LabelStyled>
-                <InputStyled
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t('auth.emailPlaceholder')}
-                  required
-                />
-              </div>
-              <div>
-                <LabelStyled htmlFor="password">{t('auth.password')}</LabelStyled>
-                <InputStyled
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t('auth.passwordPlaceholder')}
-                  required
-                />
-              </div>
-              <StyledButton type="submit" style={{ width: '100%', marginTop: '1rem' }}>
-                {t('auth.loginButton')}
-              </StyledButton>
-            </FormGrid>
-          </form>
+          {!forgotMode ? (
+            // ── LOGIN FORM ──
+            <form onSubmit={handleLogin}>
+              <FormGrid>
+                <div>
+                  <LabelStyled htmlFor="email">{t('auth.email')}</LabelStyled>
+                  <InputStyled
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t('auth.emailPlaceholder')}
+                    required
+                  />
+                </div>
+                <div>
+                  <LabelStyled htmlFor="password">{t('auth.password')}</LabelStyled>
+                  <InputStyled
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder={t('auth.passwordPlaceholder')}
+                    required
+                  />
+                  <ForgotLink
+                    type="button"
+                    onClick={() => { setForgotMode(true); setError(null); }}
+                  >
+                    Forgot password?
+                  </ForgotLink>
+                </div>
+                <StyledButton
+                  type="submit"
+                  style={{ width: '100%', marginTop: '1rem' }}
+                  disabled={lockoutRemaining > 0}
+                >
+                  {lockoutRemaining > 0
+                    ? `Too many attempts — wait ${lockoutRemaining}s`
+                    : t('auth.loginButton')}
+                </StyledButton>
+              </FormGrid>
+            </form>
+          ) : (
+            // ── FORGOT PASSWORD FORM ──
+            <form onSubmit={handleForgotPassword}>
+              <FormGrid>
+                {!resetSuccess ? (
+                  <>
+                    <div>
+                      <LabelStyled htmlFor="reset-email">{t('auth.email')}</LabelStyled>
+                      <InputStyled
+                        id="reset-email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder={t('auth.emailPlaceholder')}
+                        required
+                      />
+                    </div>
+                    <StyledButton
+                      type="submit"
+                      style={{ width: '100%', marginTop: '1rem' }}
+                      disabled={resetLoading}
+                    >
+                      {resetLoading ? 'Sending...' : 'Send reset email'}
+                    </StyledButton>
+                  </>
+                ) : (
+                  <SuccessMessage>
+                    ✓ Check your inbox — we sent a reset link to {email}
+                  </SuccessMessage>
+                )}
+                <ForgotLink
+                  type="button"
+                  style={{ textAlign: 'center' }}
+                  onClick={() => { setForgotMode(false); setResetSuccess(false); setError(null); }}
+                >
+                  ← Back to login
+                </ForgotLink>
+              </FormGrid>
+            </form>
+          )}
+
           {error && <ErrorMessage>{error}</ErrorMessage>}
         </CardContentStyled>
+
         <CardFooterStyled>
           <FooterText>
             {t('auth.noAccount')}{' '}

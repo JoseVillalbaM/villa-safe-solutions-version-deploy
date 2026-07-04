@@ -1,0 +1,30 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Admin check (cross-service read from Firestore) ──────────────────────────
+    function isAdmin() {
+      return request.auth != null &&
+        firestore.exists(
+          /databases/(default)/documents/admins/$(request.auth.uid)
+        );
+    }
+
+    // ── Materials images ─────────────────────────────────────────────────────────
+    // All visitors can view materials images.
+    // Only admin can upload (create) or delete.
+    // Enforces: must be an image type, max file size 5 MB.
+    match /materials/{fileName} {
+      allow read:   if true;
+
+      allow create: if isAdmin()
+        && request.resource.contentType.matches('image/.*')
+        && request.resource.size <= 5 * 1024 * 1024;
+
+      allow delete: if isAdmin();
+
+      // Updates replace-in-place are disabled; delete + re-upload instead.
+      allow update: if false;
+    }
+  }
+}

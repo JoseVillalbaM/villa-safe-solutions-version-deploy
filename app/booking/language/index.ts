@@ -198,9 +198,11 @@ export interface BookingLanguage {
 
   // Materiales
   materials: {
-    'marble-panels': string;
-    'wood-panels': string;
-    'led-lights': string;
+    'marble-panels':  string;
+    'wood-panels':    string;
+    'led-lights':     string;
+    'acanalados-pvc': string;
+    'marmol-pvc':     string;
   };
 
   // Time Slots — Lun-Sáb 8:00am a 6:00pm

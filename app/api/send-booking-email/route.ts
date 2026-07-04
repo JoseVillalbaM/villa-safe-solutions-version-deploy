@@ -8,20 +8,12 @@ export async function POST(request: Request) {
   try {
     const bookingData = await request.json();
 
-    // LOG DE DEPURACIÓN: Útil para ver qué llega exactamente desde el frontend
-    console.log("Datos recibidos en la API:", JSON.stringify(bookingData, null, 2));
-
-    /**
-     * MEJORA DE VALIDACIÓN DEFINITIVA:
-     * El frontend envía 'clientEmail', así que lo agregamos a la búsqueda.
-     */
     const userEmail = bookingData.clientEmail || bookingData.user?.email || bookingData.email || bookingData.to;
     const userName = bookingData.clientName || bookingData.user?.name || 'Cliente';
 
     if (!userEmail) {
-      console.error("Error: No se encontró el email del destinatario en el body enviado.");
       return NextResponse.json(
-        { error: 'Email del usuario no proporcionado', details: 'Asegúrate de enviar clientEmail o user.email' },
+        { error: 'Email del destinatario no proporcionado.' },
         { status: 400 }
       );
     }

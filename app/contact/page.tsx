@@ -351,6 +351,8 @@ const SuccessMessage = styled.div`
 `;
 
 // --- Componente Principal ---
+const LIMITS = { name: 100, email: 200, phone: 30, message: 2000 };
+
 export default function ContactPage() {
   const [user, setUser] = useState<User | null>(null);
   const [formData, setFormData] = useState({
@@ -361,6 +363,7 @@ export default function ContactPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { t } = useLanguage();
 
@@ -375,23 +378,37 @@ export default function ContactPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    const limit = LIMITS[name as keyof typeof LIMITS];
+    if (limit && value.length > limit) return;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setSubmitError(null);
 
-    // Simular envío (aquí integrarías tu lógica de envío real)
-    // Por ejemplo: enviar a Firebase, API endpoint, etc.
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setSubmitError(data.error || 'Error al enviar. Intenta nuevamente.');
+        return;
+      }
+
       setSubmitSuccess(true);
       setFormData({ name: '', email: '', phone: '', message: '' });
-
-      // Ocultar mensaje de éxito después de 5 segundos
       setTimeout(() => setSubmitSuccess(false), 5000);
-    }, 1500);
+    } catch {
+      setSubmitError('Error al enviar. Intenta nuevamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -426,6 +443,12 @@ export default function ContactPage() {
 
               {submitSuccess && (
                 <SuccessMessage>{t('contact.form.success')}</SuccessMessage>
+              )}
+
+              {submitError && (
+                <SuccessMessage style={{ background: 'rgba(239,68,68,0.1)', border: '2px solid #ef4444', color: '#ef4444' }}>
+                  {submitError}
+                </SuccessMessage>
               )}
 
               <Form onSubmit={handleSubmit}>

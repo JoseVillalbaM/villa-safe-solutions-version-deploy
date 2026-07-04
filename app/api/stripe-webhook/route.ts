@@ -51,7 +51,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  console.log('[webhook] Evento recibido:', event.type);
 
   // ============================================================================
   // MANEJO DE EVENTOS
@@ -69,10 +68,6 @@ export async function POST(request: NextRequest) {
         break;
       }
 
-      console.log('[webhook] Pago completado para booking:', bookingId);
-      console.log('[webhook] Session ID:', session.id);
-      console.log('[webhook] Payment Intent:', session.payment_intent);
-      console.log('[webhook] Amount total:', session.amount_total);
 
       try {
         const bookingRef = doc(db, 'bookings', bookingId);
@@ -86,7 +81,6 @@ export async function POST(request: NextRequest) {
           paidAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
-        console.log('[webhook] ✅ Firestore actualizado — reserva confirmada:', bookingId);
       } catch (firestoreError) {
         console.error('[webhook] ❌ Error actualizando Firestore:', firestoreError);
         // Retornar 500 para que Stripe reintente el webhook
@@ -108,7 +102,6 @@ export async function POST(request: NextRequest) {
             status: 'payment_expired',
             updatedAt: serverTimestamp(),
           });
-          console.log('[webhook] Sesión expirada para booking:', bookingId);
         } catch (error) {
           console.error('[webhook] Error actualizando sesión expirada:', error);
         }
@@ -129,7 +122,6 @@ export async function POST(request: NextRequest) {
             stripeFailureMessage: paymentIntent.last_payment_error?.message || 'Unknown error',
             updatedAt: serverTimestamp(),
           });
-          console.log('[webhook] Pago fallido para booking:', bookingId);
         } catch (error) {
           console.error('[webhook] Error actualizando pago fallido:', error);
         }
@@ -138,7 +130,6 @@ export async function POST(request: NextRequest) {
     }
 
     default:
-      console.log('[webhook] Evento no manejado:', event.type);
   }
 
   // Siempre responder 200 a Stripe para confirmar recepción

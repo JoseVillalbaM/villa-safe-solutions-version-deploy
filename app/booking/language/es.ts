@@ -224,9 +224,11 @@ export const es: BookingLanguage = {
 
   // Materiales
   materials: {
-    'marble-panels': "Panel Tipo Mármol",
-    'wood-panels': "Panel Tipo Madera",
-    'led-lights': "Luces LED",
+    'marble-panels':    "Panel Tipo Mármol",
+    'wood-panels':      "Panel Tipo Madera",
+    'led-lights':       "Luces LED",
+    'acanalados-pvc':   "Paneles Acanalados PVC",
+    'marmol-pvc':       "Mármol en PVC",
   },
 
   // Time Slots — Lun-Sáb, 8:00am a 6:00pm

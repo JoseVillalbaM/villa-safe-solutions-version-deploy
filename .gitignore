@@ -1,6 +1,17 @@
-node_modules
-.env
-.env.local
-.env.production
 node_modules/
 .next/
+
+# Environment files — never commit secrets
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+.env.test
+
+# Firebase service account credentials
+*serviceAccount*.json
+*service-account*.json
+*.pem
+.firebaserc
+.DS_Store

@@ -8,8 +8,5 @@ export async function GET() {
   // Lee desde variable de entorno del servidor (nunca expuesta al cliente)
   const enableFinancing = process.env.PAYMENTS_ENABLED === 'true';
   
-  console.log('[payment-config API] PAYMENTS_ENABLED =', process.env.PAYMENTS_ENABLED);
-  console.log('[payment-config API] enableFinancing =', enableFinancing);
-
   return NextResponse.json({ enableFinancing });
 }

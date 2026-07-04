@@ -224,9 +224,11 @@ export const en: BookingLanguage = {
 
   // Materiales
   materials: {
-    'marble-panels': "Marble Panel",
-    'wood-panels': "Wood Panel",
-    'led-lights': "LED Lights",
+    'marble-panels':  "Marble Panel",
+    'wood-panels':    "Wood Panel",
+    'led-lights':     "LED Lights",
+    'acanalados-pvc': "PVC Grooved Panels",
+    'marmol-pvc':     "PVC Marble Panels",
   },
 
   // Time Slots — Mon-Sat, 8:00am to 6:00pm

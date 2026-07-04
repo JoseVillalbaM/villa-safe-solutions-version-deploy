@@ -85,11 +85,11 @@ return (
               </ContactItem>
               <ContactItem>
                 <Mail size={20} />
-                <ContactLink href='mailto:villasafesolutions2023@gmail.com'>villasafesolutions2023@gmail.com</ContactLink>
+                <ContactLink href='mailto:villasafesolutions2023@gmail.com'>info@villasafesolutions.com</ContactLink>
               </ContactItem>
               <ContactItem>
                 <MapPin size={20} />
-                <ContactText>1993 Carnostie Road 33884 fl Winter Haven</ContactText>
+                <ContactText>Winter Haven FL 33884</ContactText>
               </ContactItem>
             </ContactList>
           </FooterSection>
